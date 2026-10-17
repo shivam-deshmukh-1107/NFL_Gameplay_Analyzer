@@ -1,0 +1,18 @@
+# the virtual environment
+nfl_venv/
+
+# source footage: large, and not ours to redistribute
+Data/
+
+# per-video intermediates; every one is rebuildable from Data/ by
+# scripts/prepare.py, so none of it belongs in git
+work/
+
+# rendered video: hundreds of MB and fully reproducible. A doc naming an .mp4
+# names a file you regenerate.
+out/*.mp4
+out/**/*.mp4
+
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,26 @@
+# Merged NFL Blitz field tracker.
+#
+#   C:/Users/shiva/anaconda3/python.exe -m venv nfl_venv
+#   ./nfl_venv/Scripts/python.exe -m pip install -r requirements.txt
+#
+# Verified 2026-10-17: Python 3.13.9, cv2 5.0.0.93, numpy 2.5.4, scipy 1.18.1,
+# scikit-learn 1.9.1 on Windows 11.
+#
+# opencv-CONTRIB, not opencv-python: the detector needs ximgproc.thinning
+# (Guo-Hall) and LSD_REFINE_STD. A plain opencv-python install cannot run the
+# pipeline at all, and the failure is an AttributeError three stages in.
+numpy>=2.0
+opencv-contrib-python==5.0.0.*
+scipy>=1.11              # least_squares, for the 6-parameter camera solve
+scikit-learn>=1.5        # GaussianMixture (gating), AgglomerativeClustering (HUD glyphs)
+
+# OPTIONAL - the learned front end only. The pipeline runs without it and that
+# is the default on any capture without its own auto-labelled rows, which has
+# been the right default three times now (a new capture collapsed the net to
+# 3-5% and then 4-10% P(turf) against the colour model's 62-88%).
+#
+# Must be built for your GPU's architecture: a stock cu126 wheel reports
+# cuda.is_available() == True on an RTX 50-series card and then fails with "no
+# kernel image is available for execution on the device".
+#   pip install torch --index-url https://download.pytorch.org/whl/cu130
+# torch>=2.4
