@@ -607,6 +607,20 @@ was in the numbers and the verdict logic overwrote it with a conclusion.
 Run `scripts/report.py`; these are the figures it printed on the day, recorded
 for before/after comparison only.
 
+**TWO FIGURES BELOW WERE LATER SUPERSEDED, AND ARE LEFT IN PLACE WITH THIS
+POINTER RATHER THAN EDITED**, because a dated record that gets quietly
+corrected is how both parents ended up holding three values for one
+measurement:
+
+* clip_03's **+2.11 yd** scale error is **withdrawn** - the truth value was
+  wrong, not the measurement. The clip does not print 29; see "Fix 1 was a fix
+  for a problem that did not exist". It is now ungraded, and shows as "-".
+* the grid-to-stripe errors of **0.069 - 0.082 yd** are **centre-column only**
+  and therefore angle-blind. Three-column figures are 0.130 - 0.198 yd; see
+  "The renderer found what every number had missed".
+
+Everything else in this section still reproduces on the current code.
+
 | clip | frames | CERT | CARRIED | TRACKED | REFUSED | covered | scale err | vs Yash |
 |---|---|---|---|---|---|---|---|---|
 | clip1_kickoff | 253 | 193 (76.3%) | 6 | 12 | 42 | 83.4% | - | **+25** |
@@ -615,18 +629,27 @@ for before/after comparison only.
 | clip4_swing | 260 | 258 (99.2%) | 1 | 1 | **0** | **100%** | +0.22 | -2 |
 | hail_mary_left | 221 | 53 (24.0%) | 9 | 30 | 129 | 41.6% | +0.20 | - |
 
-### The referees agree with Yash's own accuracy figures
+### RETRACTED: "the referees agree with Yash's own accuracy figures"
 
-| | this project | Yash's committed audit |
+| | this project, as measured then | Yash's committed audit |
 |---|---|---|
-| grid-to-stripe error, median | **0.069 - 0.082 yd** | 0.051 - 0.090 yd |
-| grid-to-stripe error, p90 | 0.122 - 0.180 yd | 0.095 - 0.133 yd |
+| grid-to-stripe error, median | ~~**0.069 - 0.082 yd**~~ **centre column only** | 0.051 - 0.090 yd |
+| grid-to-stripe error, p90 | ~~0.122 - 0.180 yd~~ centre column only | 0.095 - 0.133 yd |
 | density, median | 1.00 - 1.11 | 1.00 |
 | flow identity slips | **0 of 830 certified pairs** | - |
 
-Measured against a detector that shares no code with ours, on every clip, with
-the instrument self-validated each run. Our p90 is slightly wider than his; the
-medians overlap.
+**The agreement claim is withdrawn, and the paint rows are superseded.** Our
+figures came from the centre column alone, where the error is smallest by
+construction; three-column worst-case figures are 0.130 - 0.198 yd median.
+Whether that is better or worse than his 0.051 - 0.090 is **unknown**, because
+nobody has checked whether HIS audit samples the centre or the width. Two
+numbers that measure different places are not a comparison.
+
+What survives unchanged: the measurement was made against a detector that
+shares no code with ours, on every clip, with the instrument self-validated
+each run. The density and slip rows are unaffected - density is a count of grid
+lines per painted line and does not depend on where across the frame it is
+counted.
 
 **830 certified pairs and zero identity slips** is the headline number, because
 a whole-line slip is the one error that every paint-based metric in both parent
@@ -945,18 +968,48 @@ word "systematic" sitting next to an n of 1.
 
 ## Open, not resolved
 
-* **Hail Mary over-detects.** 605 raw segments per frame against 137–244 on the
+Checked against the current code and the 2026-10-17 run. In rough order of what
+would unblock the most:
+
+* **Stage 8 cannot start: not enough digits.** The HUD reader works and the
+  cross-clip transfer is demonstrated (clip_04's geometry taught the book that
+  read clip_03's banner), but five single-play clips print 2 of 10 digits.
+  Needs Yash's clips 05-07 and Shivam's videos 5-7. No code change will fix
+  this, and writing code against 2 digits would be code validated by nothing.
+* **clip_03's 17-frame gap is a DETECTOR problem, diagnosed and unfixed.** An
+  independently written detector fits a camera to those frames at 0.19-2.99 px
+  where ours fails at 6-22 px. Three attempts, none shipped, all three left
+  inert with their measurements. **The next move is a measurement, not a
+  change**: y=447 is absent from the line mask (0.03), so it should never have
+  become a segment at all; it exists because `merge_collinear` extended a short
+  on-mask fragment across bare turf. Measure the length distribution of merges
+  that produce low-coverage lines before touching the gap tolerance.
+* **Are our paint figures comparable to Yash's?** Unknown. Ours are now
+  three-column worst-case (0.130-0.198 yd median); his committed 0.051-0.090
+  may be centre-column, in which case the two numbers measure different
+  things. Read his audit before anyone reports a comparison.
+* **The referee's self-check runs at the first clean pair**, usually f0/f1,
+  which is the worst-conditioned place in a clip - margin ~2.3x on clip_02 and
+  Hail Mary against ~28x on clip_03. The verdict is still correct; a self-check
+  should run where the instrument is at its best.
+* **Our flow error on true pairs is 15-20 px median** against the 6-16 px Yash
+  validated, probably the half-resolution Farneback (`FLOW_SCALE = 0.5`). The
+  slip signal is 94-147 px so the margin holds, but the baseline is wider than
+  his.
+* **Hail Mary over-detects.** 605 raw segments per frame against 137-244 on the
   clips, 27 long lines against a documented 10, after the scale fix. Hypothesis,
   untested: Shivam's documented figure is from his render *with* the trained net,
   which has Hail Mary rows, while this pipeline is on the colour path. Competing
   hypothesis: the dark grade (turf L 19) gives compression noise a relatively
-  larger top-hat response. **Not chased further on purpose** — whether 27 is
-  wrong cannot be judged without a pose to check the lines against, and that is
-  the next stage. Yash's three-stage ladder impostor rejection exists for this.
-* **Residual proposer disagreement on clip_01 and clip_03** (≈11% of frames
+  larger top-hat response. It is now checkable in a way it was not before -
+  there is a pose to judge the lines against - and 24% certified with a single
+  138-frame refused run is the visible cost.
+* **Residual proposer disagreement on clip_01 and clip_03** (~11% of frames
   where both answer) has not been broken down. It may be stray lines, or the
   same class of instrument error as bug 3 above. Unknown.
 * **`det_scale` is applied to lengths and areas but assumes isotropy.** Correct
-  for every source here (anisotropy ≤ 1.0028); it is not correct for an
+  for every source here (anisotropy <= 1.0028); it is not correct for an
   anisotropically stretched upload, where the camera model's (fx, fy) handles
   the geometry but a circular morphology kernel is still wrong.
+* **Stage 9 (the metric template) has not been started**, and nothing in stages
+  0-7 depends on it.
